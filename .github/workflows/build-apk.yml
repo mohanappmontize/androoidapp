@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Flutter APK and AAB
 
 on:
   workflow_dispatch:
@@ -13,22 +13,42 @@ jobs:
       - name: Check out project
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
-          distribution: temurin
-          java-version: "17"
+          channel: stable
+          cache: true
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.9"
+      - name: Generate Android wrapper
+        run: flutter create --platforms=android --org com.alterly .
 
-      - name: Build debug APK
-        run: gradle assembleDebug
+      - name: Restore Alterly Android files
+        run: |
+          git checkout -- android/app/src/main/AndroidManifest.xml
+          git checkout -- android/app/src/main/kotlin/com/alterly/app/MainActivity.kt
+          git checkout -- android/app/src/main/kotlin/com/alterly/app/AlterlyAlarmService.kt
+          git checkout -- android/app/src/main/kotlin/com/alterly/app/AlterlyGeofenceReceiver.kt
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Build release AAB
+        run: flutter build appbundle --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: crea-app-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: alterly-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: alterly-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab

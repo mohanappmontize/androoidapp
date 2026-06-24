@@ -21,3 +21,7 @@ app-debug.apk
 - App name: `app/src/main/res/values/strings.xml`
 - Main screen text: `app/src/main/java/com/example/creaapp/MainActivity.java`
 - Package name: `app/build.gradle` and `app/src/main/AndroidManifest.xml`
+
+## Current App
+
+The first screen says **Crea App** and is ready for your real app idea.
